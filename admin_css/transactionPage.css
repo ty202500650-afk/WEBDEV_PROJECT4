@@ -1,0 +1,242 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: rgb(231, 231, 231);
+}
+
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  background: #1e293b;
+  color: white;
+  padding: 20px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.logo {
+  border-radius: 10px;
+  margin-bottom: 40px;
+  padding: 5px;
+  font-size: 15px;
+  background-color: #334155;
+  color: rgb(231, 231, 231);
+  display: flex;
+  justify-content: center;
+}
+
+.sidebar nav a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  transition: 0.3s;
+}
+
+.sidebar nav a.active {
+  background: #3b82f6;
+  color: white;
+}
+
+#logout-link {
+  color: #1e293b !important;
+  background: white;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.sidebar nav a:hover {
+  background: #334155;
+}
+
+/* MAIN CONTENT */
+.main {
+  flex: 1;
+  padding: 40px;
+}
+
+.out-box {
+  padding: 20px;
+  border-radius: 12px;
+  margin: 10px 10px 20px 10px;
+  background-color: whitesmoke;
+}
+
+.out-box h1 {
+  color: #1e293b;
+}
+
+/* TABLE CARD */
+.table-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.table-header h2 {
+  color: #1e293b;
+}
+
+.filter-group input {
+  padding: 10px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 30px;
+  width: 250px;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.filter-group input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  text-align: left;
+  padding: 14px 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+th {
+  background-color: #f8fafc;
+  font-weight: 700;
+  color: #334155;
+}
+
+tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+.approved {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 4px 12px;
+  border-radius: 30px;
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pending {
+  background: #fff3e3;
+  color: #b45309;
+  padding: 4px 12px;
+  border-radius: 30px;
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Semester badge styling */
+.semester-badge {
+  display: inline-block;
+  background: #eef2ff;
+  color: #1e40af;
+  padding: 4px 10px;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* PAGINATION */
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.pagination button {
+  padding: 8px 14px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 14px;
+}
+
+.pagination button:hover {
+  background: #e2e8f0;
+}
+
+.pagination button.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+/* MOBILE */
+@media screen and (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .sidebar nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .sidebar nav a {
+    margin: 5px;
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+  .main {
+    padding: 20px;
+  }
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .filter-group input {
+    width: 100%;
+  }
+  .pagination {
+    justify-content: center;
+  }
+  th, td {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+}

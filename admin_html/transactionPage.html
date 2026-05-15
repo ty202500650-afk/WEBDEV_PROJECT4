@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin | Transactions</title>
+  <link rel="stylesheet" href="../admin_css/transactionPage.css">
+  <!-- No inline CSS - all styles are in the external stylesheet -->
+</head>
+<body>
+
+<div class="container">
+
+  <aside class="sidebar">
+    <div class="logo"><h2>Admin</h2></div>
+    <nav>
+      <a href="../admin_html/adminPage.html">Dashboard</a>
+      <a href="../admin_html/userManage.html">User Management</a>
+      <a href="../admin_html/budgetApproval.html">Budget Approval</a>
+      <a href="../admin_html/transactionPage.html">Transactions</a>
+      <a id="logout-link" href="../html/index.html"><strong>Logout</strong></a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="out-box">
+      <h1>Transactions</h1>
+    </div>
+
+    <div class="card table-card">
+      <div class="table-header">
+        <h2>Transaction History</h2>
+        <div class="filter-group">
+          <input type="text" placeholder="Search Transactions..." id="filterInput">
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Semester</th>
+              <th>Description</th>
+              <th>Department</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Transaction rows with new Semester column inserted after Date -->
+            <tr>
+              <td>Apr 3</td>
+              <td><span class="semester-badge">1st Semester 2025</span></td>
+              <td>School Event</td>
+              <td>Event</td>
+              <td>₱5,000</td>
+              <td><span class="approved">Approved</span></td>
+            </tr>
+            <tr>
+              <td>Apr 2</td>
+              <td><span class="semester-badge">1st Semester 2025</span></td>
+              <td>Supplies</td>
+              <td>Office</td>
+              <td>₱1,200</td>
+              <td><span class="pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>Apr 1</td>
+              <td><span class="semester-badge">1st Semester 2025</span></td>
+              <td>Sports Equipment</td>
+              <td>Sports</td>
+              <td>₱3,500</td>
+              <td><span class="approved">Approved</span></td>
+            </tr>
+            <tr>
+              <td>Mar 30</td>
+              <td><span class="semester-badge">2nd Semester 2024</span></td>
+              <td>Library Books</td>
+              <td>Education</td>
+              <td>₱2,800</td>
+              <td><span class="approved">Approved</span></td>
+            </tr>
+            <tr>
+              <td>Mar 28</td>
+              <td><span class="semester-badge">1st Semester 2025</span></td>
+              <td>Computer Lab</td>
+              <td>IT</td>
+              <td>₱12,000</td>
+              <td><span class="pending">Pending</span></td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <button class="active">1</button>
+        <button>2</button>
+        <button>3</button>
+        <button>></button>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+</body>
+</html>

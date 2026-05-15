@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Admin | Notifications</title>
+  <link rel="stylesheet" href="../admin_css/notificationPage.css">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo"><h2>Admin</h2></div>
+    <nav>
+      <a href="../admin_html/adminPage.html">Dashboard</a>
+      <a href="../admin_html/notificationPage.html" class="active">Notifications</a>
+      <a href="../admin_html/userManage.html">User Management</a>
+      <a href="../admin_html/budgetApproval.html">Budget Approval</a>
+      <a href="../admin_html/transactionPage.html">Transactions</a>
+     <a id="logout-link" href="../html/index.html"><strong>Logout</strong></a>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <div class="out-box">
+      <h1>Notifications</h1>
+      <div class="notification-badge">
+        <span class="badge-count">8</span>
+        <span>Pending Approvals</span>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS TABLE -->
+    <div class="card table-card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Semester</th>
+              <th>Description</th>
+              <th>Department</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2026-04-03</td>
+              <td>1st Sem 2026</td>
+              <td><a href="#" class="notification-link">Hackathon 2026</a> - Event venue, food, and prizes for winners</td>
+              <td>Computer Science</td>
+              <td>₱15,000</td>
+              <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>2026-04-02</td>
+              <td>1st Sem 2026</td>
+              <td><a href="#" class="notification-link">IT Summit</a> - Sound system, speakers, and certificates</td>
+              <td>IT</td>
+              <td>₱25,000</td>
+              <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>2026-04-03</td>
+              <td>1st Sem 2026</td>
+              <td><a href="#" class="notification-link">App Development Workshop</a> - Software licenses and materials</td>
+              <td>ACT-Application Development</td>
+              <td>₱8,000</td>
+              <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>2026-04-04</td>
+              <td>1st Sem 2026</td>
+              <td><a href="#" class="notification-link">Networking Conference</a> - Router setup, cables, and equipment</td>
+              <td>ACT-Networking</td>
+              <td>₱12,000</td>
+              <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>2026-04-05</td>
+              <td>1st Sem 2026</td>
+              <td><a href="#" class="notification-link">Coding Bootcamp</a> - Workshop materials and snacks</td>
+              <td>Computer Science</td>
+              <td>₱5,500</td>
+              <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>2026-04-06</td>
+              <td>2nd Sem 2025</td>
+              <td><a href="#" class="notification-link">Freshmen Orientation</a> - Welcome kits and food</td>
+              <td>IT</td>
+              <td>₱3,500</td>
+              <td><span class="status-approved">Approved</span></td>
+            </tr>
+            <tr>
+              <td>2026-04-07</td>
+              <td>2nd Sem 2025</td>
+              <td><a href="#" class="notification-link">Cybersecurity Seminar</a> - Venue and speaker fees</td>
+              <td>Computer Science</td>
+              <td>₱9,500</td>
+              <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>2026-04-08</td>
+              <td>2nd Sem 2025</td>
+              <td><a href="#" class="notification-link">Quiz Bowl</a> - Prizes, certificates and venue</td>
+              <td>ACT-Application Development</td>
+              <td>₱4,500</td>
+              <td><span class="status-approved">Approved</span></td>
+            </tr>
+            <tr>
+              <td>2026-03-25</td>
+              <td>2nd Sem 2025</td>
+              <td><a href="#" class="notification-link">Graduation Ball</a> - Venue, food and decorations</td>
+              <td>ACT-Networking</td>
+              <td>₱12,000</td>
+              <td><span class="status-approved">Approved</span></td>
+            </tr>
+            <tr>
+              <td>2026-03-20</td>
+              <td>2nd Sem 2025</td>
+              <td><a href="#" class="notification-link">Library System Upgrade</a> - Software and hardware upgrade</td>
+              <td>IT</td>
+              <td>₱8,500</td>
+              <td><span class="status-approved">Approved</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>

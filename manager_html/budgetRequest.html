@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Student Council | Budget Request - 15 Day Rule</title>
+  
+  <link rel="stylesheet" href="../manager_css/budgetRequest.css">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo"><h2>STUDENT COUNCIL</h2></div>
+    <nav>
+      <a href="../manager_html/dashboardPage.html">Dashboard</a>
+      <a class="active" href="../manager_html/budgetRequest.html">Budget Request</a>
+      <a href="../manager_html/projectProposal.html">Project Proposal</a>
+      <a href="../manager_html/budgetLog.html">Budget History</a>
+      <a href="../manager_html/announcementPage.html">Announcements</a>
+      <a id="logout-link" href="../html/index.html"><strong>Logout</strong></a>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <div class="out-box">
+      <h1>Budget Request Form</h1>
+      <div class="stats-badge">
+        <span>Pending: <strong id="pendingCount">0</strong></span>
+        <span>Approved: <strong id="approvedCount">0</strong></span>
+      </div>
+    </div>
+
+    <!-- BUDGET SUMMARY -->
+    <div class="budget-summary">
+      <div class="card summary-card">
+        <p>Total Budget Requested</p>
+        <h2 id="totalRequestedDisplay">₱0</h2>
+      </div>
+      <div class="card summary-card">
+        <p>Remaining Budget</p>
+        <h2>₱21,000</h2>
+      </div>
+      <div class="card summary-card">
+        <p>Total Pending Amount</p>
+        <h2 id="totalPendingAmount">₱0</h2>
+      </div>
+      <div class="card summary-card">
+        <p>Total Requests</p>
+        <h2 id="totalRequests">0</h2>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="card form-card">
+      <h2>New Budget Request</h2>
+
+      <form id="budgetRequestForm">
+
+        <div class="form-group">
+          <label for="eventName">Event/Project Name *</label>
+          <input type="text" id="eventName" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="department">Department</label>
+            <select id="department" required>
+              <option value="">Select Department</option>
+              <option value="Computer Science">Computer Science</option>
+              <option value="IT">IT</option>
+              <option value="ACT Application Development">ACT Application Development</option>
+              <option value="ACT Networking">ACT Networking</option>
+              <option value="All">All</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="amount">Requested Amount (₱)</label>
+            <input type="number" id="amount" >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="semester">Semester *</label>
+          <select id="semester" required>
+            <option value="">Select Semester</option>
+            <option value="1st">1st Semester</option>
+            <option value="2nd">2nd Semester</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eventDate">Event Date *</label>
+            <input type="date" id="eventDate" required>
+          </div>
+
+          <div class="form-group">
+            <label for="submissionDate">Submission Date *</label>
+            <input type="date" id="submissionDate" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="description"></textarea>
+        </div>
+
+        <button type="submit">Submit</button>
+      </form>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card table-card">
+      <h2>My Recent Requests</h2>
+
+      <div class="filter-bar">
+        <select id="yearFilter"><option value="">All Year</option></select>
+        <select id="semesterFilter">
+          <option value="">All Semester</option>
+          <option value="1st">1st Sem</option>
+          <option value="2nd">2nd Sem</option>
+        </select>
+        <input type="date" id="dateFilter">
+        <input type="text" id="purposeFilter" placeholder="Search Event">
+        <select id="amountFilter">
+          <option value="">All Amount</option>
+          <option value="low">₱0 - ₱5,000</option>
+          <option value="mid">₱5,001 - ₱10,000</option>
+          <option value="high">₱10,001+</option>
+        </select>
+        <select id="statusFilter">
+          <option value="">All Status</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+        </select>
+        <button onclick="resetFilters()">Reset</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Event/Project</th>
+              <th>Department</th>
+              <th>Semester</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody id="recentRequestsBody">
+            <tr>
+              <td colspan="6" style="text-align:center;">No requests submitted yet</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+let studentRequests = JSON.parse(localStorage.getItem('studentRequests') || '[]');
+
+function formatPHP(amount) {
+  return '₱' + amount.toLocaleString('en-PH');
+}
+
+function escapeHtml(str) {
+  return str ? str.replace(/[&<>]/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;'
+  }[m])) : '';
+}
+
+function updateStudentStats() {
+  const tbody = document.getElementById('recentRequestsBody');
+
+  if (studentRequests.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No requests submitted yet</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = studentRequests.slice().reverse().map(req => `
+    <tr>
+      <td>${req.submissionDate}</td>
+      <td>${escapeHtml(req.eventName)}</td>
+      <td>${escapeHtml(req.department)}</td>
+      <td>${req.semester || '-'}</td>
+      <td>${formatPHP(req.amount)}</td>
+      <td>
+        <span class="${req.status === 'Approved' ? 'status-Approved' : 'status-Pending'}">
+          ${req.status}
+        </span>
+      </td>
+    </tr>
+  `).join('');
+}
+
+/* FILTER FIXED */
+function renderFilteredTable() {
+  let filtered = [...studentRequests];
+
+  const semVal = document.getElementById('semesterFilter').value;
+  const purposeVal = document.getElementById('purposeFilter').value.toLowerCase();
+  const amountVal = document.getElementById('amountFilter').value;
+  const statusVal = document.getElementById('statusFilter').value.toLowerCase();
+
+  if (semVal) filtered = filtered.filter(r => r.semester === semVal);
+
+  if (purposeVal)
+    filtered = filtered.filter(r => r.eventName.toLowerCase().includes(purposeVal));
+
+  if (amountVal) {
+    filtered = filtered.filter(r => {
+      if (amountVal === "low") return r.amount <= 5000;
+      if (amountVal === "mid") return r.amount <= 10000;
+      if (amountVal === "high") return r.amount > 10000;
+    });
+  }
+
+  if (statusVal)
+    filtered = filtered.filter(r => r.status.toLowerCase() === statusVal);
+
+  const tbody = document.getElementById('recentRequestsBody');
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No matching requests found</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.slice().reverse().map(req => `
+    <tr>
+      <td>${req.submissionDate}</td>
+      <td>${escapeHtml(req.eventName)}</td>
+      <td>${escapeHtml(req.department)}</td>
+      <td>${req.semester || '-'}</td>
+      <td>${formatPHP(req.amount)}</td>
+      <td>${req.status}</td>
+    </tr>
+  `).join('');
+}
+
+document.querySelectorAll('.filter-bar select, .filter-bar input')
+  .forEach(el => el.addEventListener('input', renderFilteredTable));
+
+function resetFilters() {
+  document.querySelectorAll('.filter-bar select, .filter-bar input')
+    .forEach(el => el.value = '');
+  renderFilteredTable();
+}
+
+updateStudentStats();
+</script>
+
+</body>
+</html>

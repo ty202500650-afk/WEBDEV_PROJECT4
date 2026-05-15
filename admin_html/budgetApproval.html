@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin | Budget Approval</title>
+  <link rel="stylesheet" href="../admin_css/budgetApproval.css">
+</head>
+<body>
+<div class="container">
+  <aside class="sidebar">
+    <div class="logo"><h2>Admin</h2></div>
+    <nav>
+      <a href="../admin_html/adminPage.html">Dashboard</a>
+      <a href="../admin_html/userManage.html">User Management</a>
+      <a href="../admin_html/budgetApproval.html">Budget Approval</a>
+      <a href="../admin_html/transactionPage.html">Transactions</a>
+      <a id="logout-link" href="../html/index.html"><strong>Logout</strong></a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="out-box">
+      <h1>Budget Approval</h1>
+      <div class="stats-badge">
+        <span>Pending: <strong id="pendingCount">0</strong></span>
+        <span>Total Requested: <strong id="totalRequested">₱0</strong></span>
+      </div>
+    </div>
+
+    <div class="budget-summary">
+      <div class="card summary-card"><p>Total School Budget</p><h2>₱50,000</h2></div>
+      <div class="card summary-card"><p>Approved Requests</p><h2 id="approvedSum">₱28,500</h2></div>
+      <div class="card summary-card"><p>Remaining Budget</p><h2 id="remainingBudget">₱21,500</h2></div>
+      <div class="card summary-card"><p>Pending Requests</p><h2 id="pendingBadge">0</h2></div>
+    </div>
+
+    <div class="requests-list-card">
+      <div class="list-header">
+        <h2>Pending Budget Requests</h2>
+        <div class="filter-controls">
+          <select id="deptFilter">
+            <option value="all">All Departments</option>
+          </select>
+          <input type="text" id="searchRequest" placeholder="Search by title or ID...">
+        </div>
+      </div>
+      <div class="requests-container" id="requestsContainer"></div>
+      <div class="list-footer">
+        <button class="bulk-approve" id="bulkApproveBtn">Approve Selected</button>
+        <button class="bulk-reject" id="bulkRejectBtn">Reject Selected</button>
+      </div>
+    </div>
+
+    <div class="history-card">
+      <h2>Approved Requests History</h2>
+      <div class="table-wrapper">
+        <table id="historyTable">
+          <thead>
+            <tr><th>Request ID</th><th>Event/Project</th><th>Department</th><th>Amount</th><th>Approved Date</th><th>Status</th></tr>
+          </thead>
+          <tbody id="historyTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  let approvedHistory = JSON.parse(localStorage.getItem('approvedHistory') || '[]');
+  let approvedTotal = 28500;
+  
+  function loadRequests() {
+    const allRequests = JSON.parse(localStorage.getItem('studentRequests') || '[]');
+    return allRequests.filter(r => r.status === 'pending');
+  }
+  
+  let pendingRequests = loadRequests();
+  let selectedCheckboxes = new Set();
+
+  function updateDeptFilter() {
+    const deptFilter = document.getElementById('deptFilter');
+    const departments = [...new Set(pendingRequests.map(r => r.department))];
+    deptFilter.innerHTML = '<option value="all">All Departments</option>' + 
+      departments.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
+
+  function formatPHP(amount) {
+    return '₱' + amount.toLocaleString();
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  function updateStats() {
+    const pendingCount = pendingRequests.length;
+    const totalPendingAmount = pendingRequests.reduce((sum, r) => sum + r.amount, 0);
+    document.getElementById('pendingCount').innerText = pendingCount;
+    document.getElementById('totalRequested').innerHTML = formatPHP(totalPendingAmount);
+    document.getElementById('pendingBadge').innerText = pendingCount;
+    
+    const remaining = 50000 - approvedTotal;
+    document.getElementById('remainingBudget').innerHTML = formatPHP(remaining);
+    document.getElementById('approvedSum').innerHTML = formatPHP(approvedTotal);
+    
+    updateHistoryTable();
+  }
+
+  function updateHistoryTable() {
+    const tbody = document.getElementById('historyTableBody');
+    if (approvedHistory.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No approved requests yet</td></tr>`;
+    } else {
+      tbody.innerHTML = approvedHistory.slice().reverse().map(req => `
+        <tr>
+          <td>${req.id}</span>
+          <td>${escapeHtml(req.eventName)}</span>
+          <td>${escapeHtml(req.department)}</span>
+          <td>${formatPHP(req.amount)}</span>
+          <td>${req.approvedDate}</span>
+          <td><span class="status-approved">Approved</span></span>
+        </tr>
+      `).join('');
+    }
+  }
+
+  function renderRequests() {
+    const container = document.getElementById('requestsContainer');
+    const filterDept = document.getElementById('deptFilter').value;
+    const searchTerm = document.getElementById('searchRequest').value.toLowerCase();
+
+    let filtered = pendingRequests.filter(req => {
+      const matchDept = filterDept === 'all' || req.department === filterDept;
+      const matchSearch = req.eventName.toLowerCase().includes(searchTerm) || req.id.toLowerCase().includes(searchTerm);
+      return matchDept && matchSearch;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<div style="padding:40px; text-align:center; color:#64748b;">No pending requests</div>`;
+      return;
+    }
+
+    container.innerHTML = '';
+    filtered.forEach(req => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'request-item';
+      
+      const chkDiv = document.createElement('div');
+      chkDiv.className = 'request-checkbox';
+      const chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.checked = selectedCheckboxes.has(req.id);
+      chk.addEventListener('click', (e) => { e.stopPropagation(); toggleCheckbox(req.id, chk.checked); });
+      chkDiv.appendChild(chk);
+      
+      const detailsDiv = document.createElement('div');
+      detailsDiv.className = 'request-details';
+      detailsDiv.innerHTML = `
+        <div class="request-header">
+          <span class="request-id">${req.id}</span>
+          <span class="request-dept">${escapeHtml(req.department)}</span>
+          <span class="request-amount">${formatPHP(req.amount)}</span>
+        </div>
+        <div class="request-title">${escapeHtml(req.eventName)}</div>
+        <div class="request-meta"><span>Event: ${req.eventDate}</span><span>Submitted: ${req.submissionDate}</span></div>
+        <div class="request-desc">${escapeHtml(req.description)}</div>
+      `;
+      
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'request-actions';
+      const approveBtn = document.createElement('button');
+      approveBtn.innerText = 'Approve';
+      approveBtn.className = 'approve-btn';
+      approveBtn.addEventListener('click', (e) => { e.stopPropagation(); approveRequest(req.id); });
+      const rejectBtn = document.createElement('button');
+      rejectBtn.innerText = 'Reject';
+      rejectBtn.className = 'reject-btn';
+      rejectBtn.addEventListener('click', (e) => { e.stopPropagation(); rejectRequest(req.id); });
+      actionsDiv.appendChild(approveBtn);
+      actionsDiv.appendChild(rejectBtn);
+      
+      const dropdownDiv = document.createElement('div');
+      dropdownDiv.className = 'request-dropdown';
+      let itemsHtml = `<div class="items-list"><h4> Requested Items</h4>`;
+      req.items.forEach(it => {
+        itemsHtml += `<div class="item-row"><span>${escapeHtml(it.name)}</span><span>${formatPHP(it.amount)}</span></div>`;
+      });
+      itemsHtml += `<div class="item-row" style="font-weight:800;"><span>Total</span><span>${formatPHP(req.amount)}</span></div></div>`;
+      dropdownDiv.innerHTML = itemsHtml;
+      
+      wrapper.appendChild(chkDiv);
+      wrapper.appendChild(detailsDiv);
+      wrapper.appendChild(actionsDiv);
+      wrapper.appendChild(dropdownDiv);
+      
+      wrapper.addEventListener('click', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.classList?.contains('approve-btn') || e.target.classList?.contains('reject-btn')) return;
+        dropdownDiv.classList.toggle('open');
+      });
+      
+      container.appendChild(wrapper);
+    });
+  }
+
+  function toggleCheckbox(id, isChecked) {
+    if (isChecked) selectedCheckboxes.add(id);
+    else selectedCheckboxes.delete(id);
+  }
+
+  function approveRequest(id) {
+    const request = pendingRequests.find(r => r.id === id);
+    if (!request) return;
+    
+    request.status = 'approved';
+    approvedTotal += request.amount;
+    approvedHistory.push({
+      ...request,
+      approvedDate: new Date().toISOString().slice(0,10)
+    });
+    
+    // Update localStorage
+    const allRequests = JSON.parse(localStorage.getItem('studentRequests') || '[]');
+    const updatedRequests = allRequests.map(r => r.id === id ? { ...r, status: 'approved' } : r);
+    localStorage.setItem('studentRequests', JSON.stringify(updatedRequests));
+    localStorage.setItem('approvedHistory', JSON.stringify(approvedHistory));
+    
+    pendingRequests = pendingRequests.filter(r => r.id !== id);
+    selectedCheckboxes.delete(id);
+    updateDeptFilter();
+    renderRequests();
+    updateStats();
+  }
+
+  function rejectRequest(id) {
+    const allRequests = JSON.parse(localStorage.getItem('studentRequests') || '[]');
+    const updatedRequests = allRequests.map(r => r.id === id ? { ...r, status: 'rejected' } : r);
+    localStorage.setItem('studentRequests', JSON.stringify(updatedRequests));
+    
+    pendingRequests = pendingRequests.filter(r => r.id !== id);
+    selectedCheckboxes.delete(id);
+    updateDeptFilter();
+    renderRequests();
+    updateStats();
+  }
+
+  function bulkApprove() {
+    if (selectedCheckboxes.size === 0) { alert("No requests selected."); return; }
+    const toApprove = pendingRequests.filter(r => selectedCheckboxes.has(r.id));
+    toApprove.forEach(req => approveRequest(req.id));
+  }
+
+  function bulkReject() {
+    if (selectedCheckboxes.size === 0) { alert("No requests selected."); return; }
+    const toReject = pendingRequests.filter(r => selectedCheckboxes.has(r.id));
+    toReject.forEach(req => rejectRequest(req.id));
+  }
+
+  document.getElementById('deptFilter').addEventListener('change', () => renderRequests());
+  document.getElementById('searchRequest').addEventListener('input', () => renderRequests());
+  document.getElementById('bulkApproveBtn').addEventListener('click', bulkApprove);
+  document.getElementById('bulkRejectBtn').addEventListener('click', bulkReject);
+
+  function refreshData() {
+    pendingRequests = loadRequests();
+    selectedCheckboxes.clear();
+    updateDeptFilter();
+    renderRequests();
+    updateStats();
+  }
+
+  refreshData();
+  setInterval(refreshData, 2000);
+</script>
+</body>
+</html>

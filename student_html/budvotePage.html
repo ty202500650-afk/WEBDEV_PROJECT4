@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student | Project Vote</title>
+  <link rel="stylesheet" href="../student_css/budvotePage.css">
+
+
+</head>
+<body>
+
+<div class="container">
+
+  <aside class="sidebar">
+    <div class="logo"><h2>STUDENT</h2></div>
+    <nav>
+      <a href="../student_html/mainPage.html">Dashboard</a>
+      <a class="active" href="../student_html/budvotePage.html">Budget Voting</a>
+      <a href="../student_html/budgetexpPage.html">Budget History Logs</a>
+      <a href="../student_html/announcementPage.html">Announcements</a>
+      <a id="logout-link" href="../html/index.html"><strong>Logout</strong></a>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <div class="out-box">
+      <h1> Project Voting</h1>
+      <div class="voting-stats">
+        <span id="totalVotesSpan">0 Total Votes</span>
+        <span id="votedCountSpan">0 Voted</span>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="card">
+        <p>Active Projects</p>
+        <h2 id="totalProjects">0</h2>
+      </div>
+      <div class="card">
+        <p>Total Votes Cast</p>
+        <h2 id="totalVotesCount">0</h2>
+      </div>
+      <div class="card">
+        <p>Your Participation</p>
+        <h2 id="userParticipation">0%</h2>
+      </div>
+    </div>
+
+    <div class="voting-container" id="votingContainer"></div>
+
+  </main>
+
+</div>
+
+<div id="confirmModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeModalBtn">&times;</span>
+    <h3>Confirm Your Vote</h3>
+    <p id="confirmMessage">Are you sure you want to vote for this project?</p>
+    <div class="modal-buttons">
+      <button class="modal-btn modal-cancel" id="cancelVoteBtn">Cancel</button>
+      <button class="modal-btn modal-confirm" id="confirmVoteBtn">Confirm Vote</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const projectsData = [
+    {
+      id: 1,
+      name: "Campus-wide Wi-Fi Upgrade",
+      department: "IT Department",
+      description: "Install high-speed Wi-Fi access points across all buildings, including dorms and library. Will benefit 400+ students.",
+      budget: "₱45,000",
+      budgetAmount: 45000,
+      votes: 124,
+      breakdown: [
+        { item: "Access Points (20 units)", amount: 20000 },
+        { item: "Network Cables & Installation", amount: 12000 },
+        { item: "Router & Switch Upgrade", amount: 8000 },
+        { item: "Labor & Configuration", amount: 5000 }
+      ]
+    },
+    {
+      id: 2,
+      name: "Student Lounge Renovation",
+      department: "Student Affairs",
+      description: "Renovate the old student lounge with new furniture, study pods, charging stations, and recreational area.",
+      budget: "₱35,000",
+      budgetAmount: 35000,
+      votes: 98,
+      breakdown: [
+        { item: "New Furniture (Sofas, Tables)", amount: 15000 },
+        { item: "Study Pods (4 units)", amount: 8000 },
+        { item: "Charging Stations", amount: 5000 },
+        { item: "Paint & Wall Decor", amount: 4000 },
+        { item: "Recreational Equipment", amount: 3000 }
+      ]
+    },
+  ];
+
+  let userVotes = JSON.parse(localStorage.getItem('userVotedProjects')) || [];
+  let projects = JSON.parse(localStorage.getItem('votingProjects'));
+
+  if (!projects) {
+    projects = [...projectsData];
+    localStorage.setItem('votingProjects', JSON.stringify(projects));
+  } else {
+    for (let defaultProj of projectsData) {
+      if (!projects.find(p => p.id === defaultProj.id)) {
+        projects.push(defaultProj);
+      }
+    }
+    localStorage.setItem('votingProjects', JSON.stringify(projects));
+  }
+
+  function getTotalVotes() {
+    return projects.reduce((sum, p) => sum + p.votes, 0);
+  }
+
+  function hasUserVoted(projectId) {
+    return userVotes.includes(projectId);
+  }
+
+  function getUserVotedCount() {
+    return userVotes.length;
+  }
+
+  function updateStats() {
+    const totalVotes = getTotalVotes();
+    const votedCount = getUserVotedCount();
+    const totalProjects = projects.length;
+    const participationPercent = totalProjects > 0 ? Math.round((votedCount / totalProjects) * 100) : 0;
+
+    document.getElementById('totalVotesSpan').innerHTML = `${totalVotes} Total Votes`;
+    document.getElementById('votedCountSpan').innerHTML = `${votedCount} Voted`;
+    document.getElementById('totalProjects').innerHTML = totalProjects;
+    document.getElementById('totalVotesCount').innerHTML = totalVotes;
+    document.getElementById('userParticipation').innerHTML = `${participationPercent}%`;
+  }
+
+  function showAlert(message, type = 'success') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.innerHTML = message;
+    document.body.appendChild(alertDiv);
+    setTimeout(() => alertDiv.remove(), 3000);
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+  }
+
+  // Toggle dropdown function
+  function toggleBreakdown(projectId, toggleElement) {
+    const content = document.getElementById(`breakdown-${projectId}`);
+    const icon = toggleElement.querySelector('.toggle-icon');
+    
+    if (content.classList.contains('open')) {
+      content.classList.remove('open');
+      icon.innerHTML = '▼';
+    } else {
+      content.classList.add('open');
+      icon.innerHTML = '▲';
+    }
+  }
+
+  function renderProjects() {
+    const container = document.getElementById('votingContainer');
+    const totalVotes = getTotalVotes();
+    
+    let html = '';
+    
+    for (let project of projects) {
+      const voted = hasUserVoted(project.id);
+      const votePercentage = totalVotes > 0 ? (project.votes / totalVotes) * 100 : 0;
+      const breakdownTotal = project.breakdown.reduce((sum, item) => sum + item.amount, 0);
+      
+      html += `
+        <div class="project-card" data-id="${project.id}">
+          <div class="project-header">
+            <h3>${escapeHtml(project.name)}</h3>
+            <span class="project-department"> ${escapeHtml(project.department)}</span>
+          </div>
+          <div class="project-body">
+            <div class="project-description">${escapeHtml(project.description)}</div>
+            
+            <div class="project-budget">
+              <span class="budget-label"> Proposed Budget</span>
+              <span class="budget-amount">${project.budget}</span>
+            </div>
+            
+            <div class="breakdown-section">
+              <div class="breakdown-toggle" data-project-id="${project.id}">
+                <span> View Budget Breakdown</span>
+                <span class="toggle-icon">▼</span>
+              </div>
+              <div class="breakdown-content" id="breakdown-${project.id}">
+                ${project.breakdown.map(item => `
+                  <div class="breakdown-item">
+                    <span class="breakdown-name">• ${escapeHtml(item.item)}</span>
+                    <span class="breakdown-amount">₱${item.amount.toLocaleString()}</span>
+                  </div>
+                `).join('')}
+                <div class="breakdown-total">
+                  <span>Total Estimated Cost</span>
+                  <span>₱${breakdownTotal.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+        
+            <button class="vote-btn ${voted ? 'vote-btn-voted' : 'vote-btn-active'}" data-id="${project.id}" ${voted ? 'disabled' : ''}>
+              ${voted ? ' Already Voted' : '   Vote for this Project'}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    
+    container.innerHTML = html;
+    
+    // Attach dropdown toggle events AFTER rendering
+    document.querySelectorAll('.breakdown-toggle').forEach(toggle => {
+      toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const projectId = this.getAttribute('data-project-id');
+        toggleBreakdown(projectId, this);
+      });
+    });
+    
+    // Attach vote button events
+    document.querySelectorAll('.vote-btn').forEach(btn => {
+      if (!btn.disabled) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const projectId = parseInt(btn.getAttribute('data-id'));
+          openVoteModal(projectId);
+        });
+      }
+    });
+  }
+
+  let pendingProjectId = null;
+  const modal = document.getElementById('confirmModal');
+  const confirmMessage = document.getElementById('confirmMessage');
+  const confirmBtn = document.getElementById('confirmVoteBtn');
+  const cancelBtn = document.getElementById('cancelVoteBtn');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+
+  function openVoteModal(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    if (hasUserVoted(projectId)) {
+      showAlert('You have already voted for this project!', 'warning');
+      return;
+    }
+    
+    pendingProjectId = projectId;
+    confirmMessage.innerHTML = `Are you sure you want to vote for <strong>${escapeHtml(project.name)}</strong>?<br><br>Budget: ${project.budget}<br><br>You cannot change your vote once submitted.`;
+    modal.style.display = 'flex';
+  }
+
+  function closeModal() {
+    modal.style.display = 'none';
+    pendingProjectId = null;
+  }
+
+  function confirmVote() {
+    if (pendingProjectId === null) return;
+    
+    const project = projects.find(p => p.id === pendingProjectId);
+    if (!project) return;
+    
+    if (hasUserVoted(pendingProjectId)) {
+      showAlert('You have already voted for this project!', 'warning');
+      closeModal();
+      return;
+    }
+    
+    project.votes += 1;
+    userVotes.push(pendingProjectId);
+    
+    localStorage.setItem('votingProjects', JSON.stringify(projects));
+    localStorage.setItem('userVotedProjects', JSON.stringify(userVotes));
+    
+    renderProjects();
+    updateStats();
+    
+    showAlert(`✓ You voted for "${project.name}"!`, 'success');
+    closeModal();
+  }
+
+  confirmBtn.addEventListener('click', confirmVote);
+  cancelBtn.addEventListener('click', closeModal);
+  closeModalBtn.addEventListener('click', closeModal);
+  
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  function resetVotingData() {
+    if (confirm('Reset all voting data? This will clear all votes.')) {
+      projects = JSON.parse(JSON.stringify(projectsData));
+      userVotes = [];
+      localStorage.setItem('votingProjects', JSON.stringify(projects));
+      localStorage.setItem('userVotedProjects', JSON.stringify(userVotes));
+      renderProjects();
+      updateStats();
+      showAlert('Voting data has been reset!', 'success');
+    }
+  }
+
+  const outBox = document.querySelector('.out-box');
+  const resetLink = document.createElement('span');
+  resetLink.innerHTML = '<span class="reset-link" id="resetVotesLink">   Reset Data</span>';
+  outBox.appendChild(resetLink);
+  document.getElementById('resetVotesLink')?.addEventListener('click', resetVotingData);
+
+  renderProjects();
+  updateStats();
+</script>
+
+</body>
+</html>

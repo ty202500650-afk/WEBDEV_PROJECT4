@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Council | Dashboard</title>
+<link rel="stylesheet" href="../manager_css/dashboardPage.css">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo"><h2>STUDENT COUNCIL</h2></div>
+    <nav>
+      <a class="active" href="../manager_html/dashboardPage.html">Dashboard</a>
+      <a href="../manager_html/budgetRequest.html">Budget Request</a>
+      <a href="../manager_html/projectProposal.html">Project Proposal</a>
+      <a href="../manager_html/budgetLog.html">Budget History</a>
+      <a href="../manager_html/announcementPage.html">Announcements</a>
+      <a id="logout-link" href="../html/index.html"><strong>Logout</strong></a>
+    </nav>
+    </nav>
+  </aside>
+  
+<main class="main">
+
+<div class="out-box">
+  <h1>Main Dashboard</h1>
+</div>
+
+
+<div class="summary">
+
+  <div class="card clickable-summary" data-key="Total-Budget">
+    <p>Total Budget</p>
+    <h2>₱10,000</h2>
+  </div>
+
+  <div class="card clickable-summary" data-key="Total-Expenses">
+    <p>Total Expenses</p>
+    <h2>₱2,000</h2>
+  </div>
+
+  <div class="card clickable-summary" data-key="Remaining-Budget">
+    <p>Remaining Budget</p>
+    <h2>₱8,000</h2>
+  </div>
+
+</div>
+
+<!-- CHARTS -->
+<div class="charts-container">
+
+  <!-- MONTHLY -->
+  <div class="card chart-card">
+    <h3>Monthly Expenses</h3>
+
+    <select id="monthlyYearFilter">
+      <option value="2026">2026</option>
+      <option value="2025">2025</option>
+    </select>
+
+    <div class="bar-chart" id="monthlyChartContainer"></div>
+  </div>
+
+  <!-- SEMESTER -->
+  <div class="card chart-card">
+    <h3>Semester Expenses</h3>
+
+    <select id="semesterYearFilter">
+      <option value="all">All</option>
+      <option value="2025">2025</option>
+      <option value="2026">2026</option>
+    </select>
+
+    <div class="bar-chart" id="semesterChartContainer"></div>
+  </div>
+
+</div>
+
+</main>
+</div>
+
+<!-- chart's modal -->
+<div id="chartModal" class="modal">
+  <div class="modal-content large">
+    <span class="close-btn">&times;</span>
+    <h2 id="modalTitle">Budget Breakdown</h2>
+    <div id="requestList"></div>
+  </div>
+</div>
+
+<script>
+const monthlyData = {
+  "2026": {
+    "Jan": 4500, "Feb": 3800, "Mar": 6200, "Apr": 5100,
+    "May": 0, "Jun": 0, "Jul": 0, "Aug": 5500,
+    "Sep": 4100, "Oct": 3600, "Nov": 4400, "Dec": 7000
+  },
+  "2025": {
+    "Jan": 3000, "Feb": 2500, "Mar": 4000, "Apr": 3500,
+    "May": 2000, "Jun": 2800, "Jul": 3200, "Aug": 3000,
+    "Sep": 2600, "Oct": 3100, "Nov": 2900, "Dec": 4200
+  }
+};
+
+const budgetData = {
+
+  /* MONTHS */
+  "2026-Jan": [{ name:"Sports Event", total:"₱2,000", breakdown:["Equipment ₱1200","Snacks ₱500"] }],
+  "2025-Jan": [{ name:"Sports Event", total:"₱2,000", breakdown:["Equipment ₱1200","Snacks ₱500"] }],
+
+  "2026-Feb": [{ name:"Valentines Program", total:"₱3,800", breakdown:["Decor ₱1500","Food ₱1300"] }],
+  "2025-Feb": [{ name:"Valentines Program", total:"₱3,800", breakdown:["Decor ₱1500","Food ₱1300"] }],
+
+  /* SEMESTERS (CLEAN KEYS) */
+  "2025-1stSem": [{ name:"Orientation", total:"₱10,000", breakdown:["Stage ₱4000"] }],
+  "2025-2ndSem": [{ name:"Sports Fest", total:"₱15,200", breakdown:["Uniform ₱6000"] }],
+
+  "2026-1stSem": [{ name:"Leadership Summit", total:"₱12,000", breakdown:["Speakers ₱5000"] }],
+  "2026-2ndSem": [{ name:"Graduation Ball", total:"₱9,000", breakdown:["Venue ₱4000"] }],
+
+  /* SUMMARY */
+  "Total-Budget": [{
+    name:"Overall Budget Allocation",
+    total:"₱10,000",
+    breakdown:["Events ₱6,000","Activities ₱3,000","Collection ₱1,000"]
+  }],
+  "Total-Expenses": [{
+    name:"Total Expenses",
+    total:"₱2,000",
+    breakdown:["Events ₱1,200","Materials ₱500","Misc ₱300"]
+  }],
+  
+};
+
+function formatPHP(amount){
+  return "₱" + amount.toLocaleString("en-PH");
+}
+
+function renderMonthlyChart(year="2026"){
+  const container = document.getElementById("monthlyChartContainer");
+
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const data = monthlyData[year];
+
+  let html = "";
+
+  months.forEach(m=>{
+    const amount = data[m] || 0;
+    const height = Math.max(20, Math.min(120,(amount/7000)*110));
+
+    html += `
+      <div class="bar-item">
+        <div class="bar-label">${m}</div>
+        <div class="bar-wrapper">
+          <div class="bar" data-key="${year}-${m}" style="height:${height}px;"></div>
+          <span class="bar-value">${formatPHP(amount)}</span>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function renderSemesterChart(filter="all"){
+  const container = document.getElementById("semesterChartContainer");
+
+  const semesters = [
+    {label:"1st Sem 2025", key:"1stSem", year:"2025", amount:28500},
+    {label:"2nd Sem 2025", key:"2ndSem", year:"2025", amount:31200},
+    {label:"1st Sem 2026", key:"1stSem", year:"2026", amount:22000},
+    {label:"2nd Sem 2026", key:"2ndSem", year:"2026", amount:16500},
+  ];
+
+  const filtered = filter==="all"
+    ? semesters
+    : semesters.filter(s=>s.year===filter);
+
+  let html = "";
+
+  filtered.forEach(s=>{
+    const height = Math.max(25, Math.min(120,(s.amount/32000)*120));
+
+    html += `
+      <div class="bar-item">
+        <div class="bar-label">${s.label}</div>
+        <div class="bar-wrapper">
+          <div class="bar" data-key="${s.year}-${s.key}" style="height:${height}px;"></div>
+          <span class="bar-value">${formatPHP(s.amount)}</span>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function handleClick(e){
+
+  const bar = e.target.closest(".bar");
+  const summary = e.target.closest(".clickable-summary");
+
+  let key = null;
+
+  if(bar) key = bar.dataset.key;
+  if(summary) key = summary.dataset.key;
+
+  if(!key) return;
+
+  const modal = document.getElementById("chartModal");
+  const title = document.getElementById("modalTitle");
+  const list = document.getElementById("requestList");
+
+  title.innerText = "Budget Breakdown: " + key;
+  list.innerHTML = "";
+
+  const data = budgetData[key] || [];
+
+  if(data.length === 0){
+    list.innerHTML = "<p>No data available.</p>";
+  } else {
+    data.forEach(item=>{
+      const div = document.createElement("div");
+      div.className = "request-item";
+
+      div.innerHTML = `
+        <div class="request-header">
+          <span>${item.name}</span>
+          <span>${item.total}</span>
+        </div>
+        <div class="request-details">
+          ${item.breakdown.map(b=>`<p>• ${b}</p>`).join("")}
+        </div>
+      `;
+
+      div.onclick = ()=>{
+        const d = div.querySelector(".request-details");
+        d.style.display = d.style.display === "block" ? "none" : "block";
+      };
+
+      list.appendChild(div);
+    });
+  }
+
+  modal.style.display = "block";
+}
+
+window.addEventListener("DOMContentLoaded",()=>{
+
+  renderMonthlyChart("2026");
+  renderSemesterChart("all");
+
+  document.getElementById("monthlyYearFilter")
+    .addEventListener("change",e=>renderMonthlyChart(e.target.value));
+
+  document.getElementById("semesterYearFilter")
+    .addEventListener("change",e=>renderSemesterChart(e.target.value));
+
+  document.getElementById("monthlyChartContainer")
+    .addEventListener("click",handleClick);
+
+  document.getElementById("semesterChartContainer")
+    .addEventListener("click",handleClick);
+
+  document.querySelectorAll(".clickable-summary")
+    .forEach(el=>el.addEventListener("click",handleClick));
+
+});
+
+
+document.querySelector(".close-btn").onclick = ()=>{
+  document.getElementById("chartModal").style.display = "none";
+};
+
+window.onclick = (e)=>{
+  const modal = document.getElementById("chartModal");
+  if(e.target === modal){
+    modal.style.display = "none";
+  }
+};
+
+</script>
+
+</body>
+</html>

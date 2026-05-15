@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Admin | Add New User</title>
+  <link rel="stylesheet" href="../admin_css/userManagePage.2.css">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo"><h2>Admin</h2></div>
+    <nav>
+      <a href="../admin_html/adminPage.html">Dashboard</a>
+      <a href="../admin_html/userManage.html" class="active">User Management</a>
+      <a href="../admin_html/budgetApproval.html">Budget Approval</a>
+      <a href="../admin_html/transactionPage.html">Transactions</a>
+      <a id="logout-link" href="../html/index.html"><strong>Logout</strong></a>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <div class="out-box">
+      <h1>Add New User</h1>
+      <a href="../admin_html/userManage.html" class="back-btn">← Back to User List</a>
+    </div>
+
+    <!-- ADD USER FORM -->
+    <div class="card form-card">
+      <h2>User Information</h2>
+      <p class="form-subtitle">Please fill out all required fields (*)</p>
+
+      <form id="addUserForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name *</label>
+            <input type="text" id="firstName" placeholder="Enter first name" required>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name *</label>
+            <input type="text" id="lastName" placeholder="Enter last name" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address *</label>
+          <input type="email" id="email" placeholder="example@wmsu.edu.ph" required>
+          <small>Use valid school email address</small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="department">Department *</label>
+            <select id="department" required>
+              <option value="">Select Department</option>
+              <option value="Computer Science">Computer Science</option>
+              <option value="Information Technology">Information Technology</option>
+              <option value="ACT-Application Development">ACT-Application Development</option>
+              <option value="ACT-Networking">ACT-Networking</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="role">Role *</label>
+            <select id="role" required>
+              <option value="">Select Role</option>
+              <option value="Student">Student</option>
+              <option value="Faculty">Student Council</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+        </div>
+
+          <div class="form-group">
+            <label for="studentId">Student/Faculty ID *</label>
+            <input type="text" id="studentId" placeholder="e.g., 2024-00123" required>
+          </div>
+        </div>
+
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" id="sendEmail" checked>
+            Send email notification to user
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <a href="../admin_html/userManage.html" class="cancel-btn">Cancel</a>
+          <button type="submit" class="submit-btn">+ Add User</button>
+        </div>
+      </form>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>

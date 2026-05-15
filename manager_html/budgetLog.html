@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Budget Expenses</title>
+  <link rel="stylesheet" href="../admin_css/notificationPage.css">
+
+  <style>
+    /* FILTER BAR */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .filter-bar input,
+    .filter-bar select {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    .filter-bar button {
+      padding: 8px 12px;
+      border: none;
+      background: #1e293b;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .filter-bar button:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo"><h2>Student</h2></div>
+    <nav>
+      <a href="../manager_html/dashboardPage.html">Dashboard</a>
+      <a href="../manager_html/budgetRequest.html">Budget Request</a>
+      <a href="../manager_html/projectProposal.html">Project Proposal</a>
+      <a class="active" href="../manager_html/budgetLog.html">Budget History</a>
+      <a href="../manager_html/announcementPage.html">Announcements</a>
+      <a id="logout-link" href="../html/index.html"><strong>Logout</strong></a>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <div class="out-box">
+      <h1>Budget Expenses History</h1>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filter-bar">
+
+      <!-- Year -->
+      <select id="yearFilter">
+        <option value="">All Year</option>
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+      </select>
+
+      <!-- Semester -->
+      <select id="semesterFilter">
+        <option value="">All Semester</option>
+        <option value="1st">1st Sem</option>
+        <option value="2nd">2nd Sem</option>
+      </select>
+
+      <!-- Date -->
+      <input type="date" id="dateFilter">
+
+      <!-- Purpose -->
+      <input type="text" id="purposeFilter" placeholder="Search Purpose">
+
+      <!-- Amount -->
+      <select id="amountFilter">
+        <option value="">All Amount</option>
+        <option value="low">₱0 - ₱5,000</option>
+        <option value="mid">₱5,001 - ₱10,000</option>
+        <option value="high">₱10,001+</option>
+      </select>
+
+      <!-- Status -->
+      <select id="statusFilter">
+        <option value="">All Status</option>
+        <option value="Approved">Approved</option>
+        <option value="Pending">Pending</option>
+        <option value="Rejected">Rejected</option>
+      </select>
+
+      <button onclick="resetFilters()">Reset</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card table-card">
+      <div class="table-wrapper">
+        <table id="budgetTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Semester</th>
+              <th>Description</th>
+              <th>Department</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr>
+              <td>2026-04-03</td>
+              <td>1st Sem 2026</td>
+              <td class="purpose">Hackathon 2026</td>
+              <td>Computer Science</td>
+              <td class="amount">15000</td>
+              <td class="status">Pending</td>
+            </tr>
+
+            <tr>
+              <td>2026-04-06</td>
+              <td>2nd Sem 2025</td>
+              <td class="purpose">Freshmen Orientation</td>
+              <td>IT</td>
+              <td class="amount">3500</td>
+              <td class="status">Approved</td>
+            </tr>
+
+            <tr>
+              <td>2026-03-20</td>
+              <td>2nd Sem 2025</td>
+              <td class="purpose">Library System Upgrade</td>
+              <td>IT</td>
+              <td class="amount">8500</td>
+              <td class="status">Rejected</td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- FILTER SCRIPT -->
+<script>
+const filters = {
+  year: document.getElementById("yearFilter"),
+  semester: document.getElementById("semesterFilter"),
+  date: document.getElementById("dateFilter"),
+  purpose: document.getElementById("purposeFilter"),
+  amount: document.getElementById("amountFilter"),
+  status: document.getElementById("statusFilter")
+};
+
+const rows = document.querySelectorAll("#budgetTable tbody tr");
+
+function filterTable() {
+  rows.forEach(row => {
+
+    const date = row.cells[0].innerText;
+    const semester = row.cells[1].innerText;
+    const purpose = row.querySelector(".purpose").innerText.toLowerCase();
+    const amount = parseInt(row.querySelector(".amount").innerText);
+    const status = row.querySelector(".status").innerText;
+
+    let show = true;
+
+    // YEAR
+    if (filters.year.value && !date.includes(filters.year.value)) show = false;
+
+    // SEMESTER
+    if (filters.semester.value && !semester.toLowerCase().includes(filters.semester.value)) show = false;
+
+    // DATE
+    if (filters.date.value && filters.date.value !== date) show = false;
+
+    // PURPOSE
+    if (filters.purpose.value && !purpose.includes(filters.purpose.value.toLowerCase())) show = false;
+
+    // AMOUNT
+    if (filters.amount.value === "low" && amount > 5000) show = false;
+    if (filters.amount.value === "mid" && (amount <= 5000 || amount > 10000)) show = false;
+    if (filters.amount.value === "high" && amount <= 10000) show = false;
+
+    // STATUS
+    if (filters.status.value && status !== filters.status.value) show = false;
+
+    row.style.display = show ? "" : "none";
+  });
+}
+
+// Attach events
+Object.values(filters).forEach(f => f.addEventListener("change", filterTable));
+filters.purpose.addEventListener("input", filterTable);
+
+function resetFilters() {
+  Object.values(filters).forEach(f => f.value = "");
+  filterTable();
+}
+</script>
+
+</body>
+</html>
